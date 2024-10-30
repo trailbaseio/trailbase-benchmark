@@ -5,10 +5,8 @@ version: 0.0.1
 environment:
   sdk: ^3.5.3
 
-# Add regular dependencies here.
 dependencies:
-  trailbase:
-    path: ../../../trailbase/client/trailbase-dart
+  trailbase: ^0.1.0
   pool: ^1.5.1
 
 dev_dependencies:

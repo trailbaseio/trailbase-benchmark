@@ -361,10 +361,11 @@ packages:
   trailbase:
     dependency: "direct main"
     description:
-      path: "../../../trailbase/client/trailbase-dart"
-      relative: true
-    source: path
-    version: "0.0.1"
+      name: trailbase
+      sha256: "618ab024b4a3be20d054fdd86951182911571fc28092b2a7948aa94f5e6b3e6c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0"
   typed_data:
     dependency: transitive
     description:

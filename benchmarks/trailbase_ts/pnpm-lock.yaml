@@ -12,8 +12,8 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0
       trailbase:
-        specifier: link:../../../trailbase/client/trailbase-ts
-        version: link:../../../trailbase/client/trailbase-ts
+        specifier: ^0.1.0
+        version: 0.1.0
     devDependencies:
       '@types/node':
         specifier: ^20.14.7
@@ -27,9 +27,16 @@ packages:
   '@types/node@20.14.7':
     resolution: {integrity: sha512-uTr2m2IbJJucF3KUxgnGOZvYbN0QgkGyWxG6973HCpMYFy2KfcgYuIwkJQMQkt1VbBMlvWRbpshFTLxnxCZjKQ==}
 
+  jwt-decode@4.0.0:
+    resolution: {integrity: sha512-+KJGIyHgkGuIq3IEBNftfhW/LfWhXUIY6OmyVWjliu5KH1y0fw7VQ8YndE2O4qZdMSd9SqbnC8GOcZEy0Om7sA==}
+    engines: {node: '>=18'}
+
   p-limit@5.0.0:
     resolution: {integrity: sha512-/Eaoq+QyLSiXQ4lyYV23f14mZRQcXnxfHrN0vCai+ak9G0pp9iEQukIIZq5NccEvwRB8PUnZT0KsOoDCINS1qQ==}
     engines: {node: '>=18'}
+
+  trailbase@0.1.0:
+    resolution: {integrity: sha512-8i8f3vjik9T6AvAXC7pv/CwbNbcrb3vibXxVG4FO+xGe9dl9K133BFtIIDZmH7DOL7n2CeBYHvpWB4T1JM+vVA==}
 
   typescript@5.5.2:
     resolution: {integrity: sha512-NcRtPEOsPFFWjobJEtfihkLCZCXZt/os3zf8nTxjVH3RvTSxjrCamJpbExGvYOF+tFHc3pA65qpdwPbzjohhew==}
@@ -38,6 +45,10 @@ packages:
 
   undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
+
+  uuid@11.0.2:
+    resolution: {integrity: sha512-14FfcOJmqdjbBPdDjFQyk/SdT4NySW4eM0zcG+HqbHP5jzuH56xO3J1DGhgs/cEMCfwYi3HQI1gnTO62iaG+tQ==}
+    hasBin: true
 
   yocto-queue@1.0.0:
     resolution: {integrity: sha512-9bnSc/HEW2uRy67wc+T8UwauLuPJVn28jb+GtJY16iiKWyvmYJRXVT4UamsAEGQfPohgr2q4Tq0sQbQlxTfi1g==}
@@ -49,12 +60,21 @@ snapshots:
     dependencies:
       undici-types: 5.26.5
 
+  jwt-decode@4.0.0: {}
+
   p-limit@5.0.0:
     dependencies:
       yocto-queue: 1.0.0
 
+  trailbase@0.1.0:
+    dependencies:
+      jwt-decode: 4.0.0
+      uuid: 11.0.2
+
   typescript@5.5.2: {}
 
   undici-types@5.26.5: {}
+
+  uuid@11.0.2: {}
 
   yocto-queue@1.0.0: {}

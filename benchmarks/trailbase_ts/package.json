@@ -13,6 +13,6 @@
   },
   "dependencies": {
     "p-limit": "^5.0.0",
-    "trailbase": "link:../../../trailbase/client/trailbase-ts"
+    "trailbase": "^0.1.0"
   }
 }
