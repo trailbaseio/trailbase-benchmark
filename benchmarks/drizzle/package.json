@@ -1,0 +1,23 @@
+{
+  "name": "drizzle",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "tsc && node dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.14.7",
+    "@types/uuid": "^10.0.0",
+    "typescript": "^5.5.2"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.7.0",
+    "drizzle-orm": "^0.32.0",
+    "p-limit": "^6.1.0"
+  }
+}

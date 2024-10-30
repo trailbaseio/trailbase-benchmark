@@ -1,0 +1,10 @@
+[package]
+name = "pocketbase_rust"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.86"
+pocketbase-sdk = "0.1.1"
+serde = { version = "^1.0.204", features = ["derive"] }
+tokio = {version  = "^1.38.0", features=["macros", "rt-multi-thread"] }

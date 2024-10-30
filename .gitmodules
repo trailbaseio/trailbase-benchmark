@@ -1,0 +1,3 @@
+[submodule "vendor/pocketbase"]
+	path = vendor/pocketbase
+	url = https://github.com/pocketbase/pocketbase.git
