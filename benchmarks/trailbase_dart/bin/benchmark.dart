@@ -2,6 +2,7 @@ import 'dart:isolate';
 
 import 'package:pool/pool.dart';
 import 'package:trailbase/trailbase.dart';
+import 'package:dio/dio.dart';
 
 // Hard-coded in the migrations.
 const room = 'AZH8mYTFd5OexZn4K10jCA==';
@@ -171,6 +172,38 @@ Future<void> benchmarkHigherConcurrency() async {
       'Parallel-insertion of $N messages, took ${(DateTime.now().difference(start))} (limit=4x 32)');
 }
 
+Future<void> fibonacciJsBenchmark() async {
+  const N = 1000;
+
+  final dio = Dio();
+
+  Future<Response<String>> getResult(int i) async {
+    final response = await dio.get<String>('http://localhost:4000/fibonacci');
+    assert(response.data == '832040');
+    return response;
+  }
+
+  // Quick sanity check;
+  final response = await getResult(-1);
+  if (int.parse(response.data!) != 832040) {
+    throw Exception('Unexpected result: ${response.data}');
+  }
+
+  final pool = Pool(concurrency);
+  final futures = <Future<void>>[];
+  final start = DateTime.now();
+
+  for (int i = 0; i < N; i++) {
+    futures.add(pool.withResource(() => getResult(i)));
+  }
+  pool.close();
+
+  await Future.wait(futures);
+
+  print(
+      'Called "/fibonacci" $N times, took ${(DateTime.now().difference(start))} (limit=$concurrency)');
+}
+
 Future<void> main(List<String> arguments) async {
   final client = Client('http://localhost:4000');
 
@@ -179,4 +212,5 @@ Future<void> main(List<String> arguments) async {
   await insertBenchmark(client);
   // await readBenchmark(client);
   // await benchmarkHigherConcurrency();
+  // await fibonacciJsBenchmark();
 }
