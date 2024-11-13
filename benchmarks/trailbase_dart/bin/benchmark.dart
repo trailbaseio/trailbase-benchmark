@@ -173,19 +173,28 @@ Future<void> benchmarkHigherConcurrency() async {
 }
 
 Future<void> fibonacciJsBenchmark() async {
-  const N = 1000;
+  const N = 100;
+  const M = 30;
+  const fib = {
+    30: '832040',
+    40: '102334155',
+  };
+  final expected = fib[M]!;
+
+  const port = 4000;
+  // const port = 8090;
 
   final dio = Dio();
-
   Future<Response<String>> getResult(int i) async {
-    final response = await dio.get<String>('http://localhost:4000/fibonacci');
-    assert(response.data == '832040');
+    final response =
+        await dio.get<String>('http://localhost:$port/fibonacci?n=$M');
+    assert(response.data == expected);
     return response;
   }
 
   // Quick sanity check;
   final response = await getResult(-1);
-  if (int.parse(response.data!) != 832040) {
+  if (response.data != expected) {
     throw Exception('Unexpected result: ${response.data}');
   }
 
@@ -201,13 +210,12 @@ Future<void> fibonacciJsBenchmark() async {
   await Future.wait(futures);
 
   print(
-      'Called "/fibonacci" $N times, took ${(DateTime.now().difference(start))} (limit=$concurrency)');
+      'Called "/fibonacci" for fib($M) $N times, took ${(DateTime.now().difference(start))} (limit=$concurrency)');
 }
 
 Future<void> main(List<String> arguments) async {
-  final client = Client('http://localhost:4000');
-
-  await client.login('user@localhost', password);
+  final client = Client('http://localhost:4000')
+    ..login('user@localhost', password);
 
   await insertBenchmark(client);
   // await readBenchmark(client);

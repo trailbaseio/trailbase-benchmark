@@ -1,5 +1,5 @@
-/// <reference path="../../../../../trailbase/trailbase-core/js/dist/index.d.ts" />
-import { addRoute } from "trailbase:main";
+import { addRoute, parsePath, stringHandler } from "trailbase:main";
+import type { StringRequestType, ParsedPath } from "../../../../../trailbase/trailbase-core/js/src/index.ts";
 
 function fibonacci(num: number): number {
   switch (num) {
@@ -12,8 +12,8 @@ function fibonacci(num: number): number {
   }
 }
 
-addRoute("GET", "/fibonacci", (_req: Request): Response => {
-  return {
-    body: fibonacci(30).toString(),
-  };
-});
+addRoute("GET", "/fibonacci", stringHandler(async (req: StringRequestType) => {
+  const uri : ParsedPath = parsePath(req.uri);
+  const n = +(uri.query.get("n") ?? 40);
+  return fibonacci(n).toString();
+}));

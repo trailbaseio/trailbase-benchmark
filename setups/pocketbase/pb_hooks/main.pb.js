@@ -12,6 +12,9 @@
 // }
 
 routerAdd('GET', '/fibonacci', (c) => {
+  const param = c.queryParam("n");
+  const n = +(param.length > 0 ? param : 40);
+
   function fibonacci(num) {
     switch (num) {
       case 0:
@@ -23,5 +26,5 @@ routerAdd('GET', '/fibonacci', (c) => {
     }
   }
 
-	return c.string(200, fibonacci(30));
+	return c.string(200, fibonacci(n));
 });
