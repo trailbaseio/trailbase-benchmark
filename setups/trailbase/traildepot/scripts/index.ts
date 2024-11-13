@@ -1,16 +1,5 @@
+/// <reference path="../../../../../trailbase/trailbase-core/js/dist/index.d.ts" />
 import { addRoute } from "trailbase:main";
-
-type Headers = { [key: string]: string };
-type Request = {
-  uri: string;
-  headers: Headers;
-  body: string;
-};
-type Response = {
-  headers?: Headers;
-  status?: number;
-  body?: string;
-};
 
 function fibonacci(num: number): number {
   switch (num) {
