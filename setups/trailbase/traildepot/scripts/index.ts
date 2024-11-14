@@ -1,5 +1,5 @@
-import { addRoute, parsePath, stringHandler } from "trailbase:main";
-import type { StringRequestType, ParsedPath } from "../../../../../trailbase/trailbase-core/js/src/index.ts";
+import { addRoute, parsePath, stringHandler } from "../trailbase.js";
+import type { StringRequestType, ParsedPath } from "../trailbase.d.ts";
 
 function fibonacci(num: number): number {
   switch (num) {

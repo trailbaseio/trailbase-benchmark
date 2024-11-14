@@ -174,7 +174,7 @@ Future<void> benchmarkHigherConcurrency() async {
 
 Future<void> fibonacciJsBenchmark() async {
   const N = 100;
-  const M = 30;
+  const M = 40;
   const fib = {
     30: '832040',
     40: '102334155',
@@ -214,8 +214,8 @@ Future<void> fibonacciJsBenchmark() async {
 }
 
 Future<void> main(List<String> arguments) async {
-  final client = Client('http://localhost:4000')
-    ..login('user@localhost', password);
+  final client = Client('http://127.0.0.1:4000');
+  await client.login('user@localhost', password);
 
   await insertBenchmark(client);
   // await readBenchmark(client);
