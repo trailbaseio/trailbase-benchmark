@@ -346,6 +346,26 @@ export var StatusCodes;
     /// gain network access.
     StatusCodes[StatusCodes["NETWORK_AUTHENTICATION_REQUIRED"] = 511] = "NETWORK_AUTHENTICATION_REQUIRED";
 })(StatusCodes || (StatusCodes = {}));
+export class HttpError extends Error {
+    statusCode;
+    headers;
+    constructor(statusCode, message, headers) {
+        super(message);
+        this.statusCode = statusCode;
+        this.headers = headers;
+    }
+    toString() {
+        return `HttpError(${this.statusCode}, ${this.message})`;
+    }
+    toResponse() {
+        const m = this.message;
+        return {
+            headers: this.headers,
+            status: this.statusCode,
+            body: m !== "" ? encodeFallback(m) : undefined,
+        };
+    }
+}
 export function stringHandler(f) {
     return async (req) => {
         try {
@@ -354,6 +374,7 @@ export function stringHandler(f) {
                 uri: req.uri,
                 params: req.params,
                 headers: req.headers,
+                user: req.user,
                 body: body && decodeFallback(body),
             });
             if (resp === undefined) {
@@ -373,6 +394,9 @@ export function stringHandler(f) {
             };
         }
         catch (err) {
+            if (err instanceof HttpError) {
+                return err.toResponse();
+            }
             return {
                 status: StatusCodes.INTERNAL_SERVER_ERROR,
                 body: encodeFallback(`Uncaught error: ${err}`),
@@ -388,6 +412,7 @@ export function htmlHandler(f) {
                 uri: req.uri,
                 params: req.params,
                 headers: req.headers,
+                user: req.user,
                 body: body && decodeFallback(body),
             });
             if (resp === undefined) {
@@ -408,6 +433,9 @@ export function htmlHandler(f) {
             };
         }
         catch (err) {
+            if (err instanceof HttpError) {
+                return err.toResponse();
+            }
             return {
                 status: StatusCodes.INTERNAL_SERVER_ERROR,
                 body: encodeFallback(`Uncaught error: ${err}`),
@@ -423,6 +451,7 @@ export function jsonHandler(f) {
                 uri: req.uri,
                 params: req.params,
                 headers: req.headers,
+                user: req.user,
                 body: body && decodeFallback(body),
             });
             if (resp === undefined) {
@@ -444,6 +473,9 @@ export function jsonHandler(f) {
             };
         }
         catch (err) {
+            if (err instanceof HttpError) {
+                return err.toResponse();
+            }
             return {
                 headers: [["content-type", "application/json"]],
                 status: StatusCodes.INTERNAL_SERVER_ERROR,
@@ -458,7 +490,7 @@ export function addRoute(method, route, callback) {
     callbacks.set(`${method}:${route}`, callback);
     console.debug("JS: Added route:", method, route);
 }
-export async function dispatch(method, route, uri, pathParams, headers, body) {
+export async function dispatch(method, route, uri, pathParams, headers, user, body) {
     const key = `${method}:${route}`;
     const cb = callbacks.get(key);
     if (!cb) {
@@ -468,9 +500,11 @@ export async function dispatch(method, route, uri, pathParams, headers, body) {
         uri,
         params: Object.fromEntries(pathParams),
         headers: Object.fromEntries(headers),
+        user: user,
         body,
     })) ?? { status: StatusCodes.OK });
 }
+globalThis.__dispatch = dispatch;
 export async function query(queryStr, params) {
     return await rustyscript.async_functions.query(queryStr, params);
 }
@@ -629,4 +663,3 @@ export function encodeFallback(string) {
     // because the original array still exists.
     return target.slice ? target.slice(0, at) : target.subarray(0, at);
 }
-globalThis.__dispatch = dispatch;

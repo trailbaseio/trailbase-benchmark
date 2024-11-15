@@ -12,10 +12,10 @@ const Columns = {
   VIRT: 4,
   RES: 5,
   SHR: 6,
-  S: 7,
+  STATUS: 7,
   CPU: 8,
   MEM: 9,
-  TIME: 10,
+  CPU_TIME: 10,  // Not wall time.
   COMMAND: 11,
 };
 
@@ -32,11 +32,15 @@ async function main(): Promise<void> {
 
   const file = await fs.open(inputFilename);
 
+  let numLines = 0;
   const entries = new Array<Output>();
   for await (const line of file.readLines()) {
+    numLines++;
     const split = line.trim().split(/\s+/);
 
-    console.assert(split[Columns.S] == "S", "Wrong column offset?")
+    // S = 'sleeping', R = 'running', I = 'idle', ...
+    const processStatus = split[Columns.STATUS];
+    console.assert(["S", "R", "I"].includes(processStatus), `Wrong column offset? ${line}`)
 
     entries.push({
       cpu: parseFloat(split[Columns.CPU]) / 100,
@@ -46,6 +50,8 @@ async function main(): Promise<void> {
 
   const output = await fs.open(outputFilename, "w");
   await output.write(JSON.stringify(entries, null, 2));
+
+  console.log(`Data points written '${entries.length}' from lines ${numLines}`);
 }
 
 await main();
