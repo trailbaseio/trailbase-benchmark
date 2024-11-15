@@ -141,6 +141,6 @@ Future<void> readBenchmark(PocketBase pb) async {
 Future<void> main(List<String> arguments) async {
   final pb = PocketBase('http://127.0.0.1:8090');
 
-  // await insertBenchmark(pb);
-  await readBenchmark(pb);
+  await insertBenchmark(pb);
+  // await readBenchmark(pb);
 }
