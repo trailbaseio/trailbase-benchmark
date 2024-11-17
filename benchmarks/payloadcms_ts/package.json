@@ -1,0 +1,17 @@
+{
+  "name": "trailbase_benchmark_runner_ts",
+  "version": "0.0.1",
+  "description": "Benchmark driver for TrailBase in TypeScript",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "tsc && node dist/index.js"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.7",
+    "typescript": "^5.5.2"
+  },
+  "dependencies": {
+    "p-limit": "^5.0.0"
+  }
+}
