@@ -10,9 +10,9 @@ Inserted 100000 messages, took 1989.648s (limit=64)
 With manually enabling WAL:
 
 ```
-RAGMA journal_mode       = WAL
-RAGMA journal_size_limit = 200000000
-RAGMA busy_timeout       = 10000
+sqlite> PRAGMA journal_mode       = WAL;
+sqlite> PRAGMA journal_size_limit = 200000000;
+sqlite> PRAGMA busy_timeout       = 10000;
 ```
 
 Inserted 10000 messages, took 43.858s (limit=64)
