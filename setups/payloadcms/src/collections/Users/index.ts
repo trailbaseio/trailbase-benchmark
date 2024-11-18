@@ -1,6 +1,8 @@
 import type { CollectionConfig } from 'payload'
 
-import { authenticated } from '../../access/authenticated'
+export const authenticated = ({ req: { user } }) => {
+  return Boolean(user)
+}
 
 export const Users: CollectionConfig = {
   slug: 'users',
