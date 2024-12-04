@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using System.Text.Json;
+using System.Diagnostics;
 
 public class Message {
   public string _owner { get; }
@@ -26,7 +27,7 @@ class Program {
 
     var allTasks = new List<Task>();
     var throttler = new SemaphoreSlim(initialCount: CONCURRENCY);
-    var started = DateTimeOffset.Now;
+    var started = Stopwatch.StartNew();
     for (int i = 0; i < N; ++i) {
       int x = i;
 
@@ -54,13 +55,14 @@ class Program {
     }
 
     await Task.WhenAll(allTasks);
+    started.Stop();
 
     Console.WriteLine(
-      $"Inserted {N} messages, took {DateTimeOffset.Now - started} (limit={CONCURRENCY})");
+      $"Inserted {N} messages, took {started.Elapsed} (limit={CONCURRENCY})");
   }
 
   static void PrintLatencies(List<TimeSpan> latencies) {
-    latencies.Sort((a, b) => a.Microseconds.CompareTo(b.Microseconds));
+    latencies.Sort();
 
     int len = latencies.Count();
     var p50 = latencies[len / 2];
@@ -69,10 +71,10 @@ class Program {
     var p95 = latencies[(int)Math.Floor(len * 0.95)];
 
     Console.WriteLine($@"Latencies:
-      p50={p50.Microseconds}us
-      p75={p75.Microseconds}us
-      p90={p90.Microseconds}us
-      p95={p95.Microseconds}us");
+      p50={p50.TotalMicroseconds}us
+      p75={p75.TotalMicroseconds}us
+      p90={p90.TotalMicroseconds}us
+      p95={p95.TotalMicroseconds}us");
   }
 
   public static async Task ReadBenchmark(TrailBase.Client client) {
@@ -91,7 +93,7 @@ class Program {
       var throttler = new SemaphoreSlim(initialCount: CONCURRENCY);
 
       var insertLatencies = new List<TimeSpan>();
-      var started = DateTimeOffset.Now;
+      var started = Stopwatch.StartNew();
       for (int i = 0; i < N; ++i) {
         int x = i;
 
@@ -101,7 +103,7 @@ class Program {
         allTasks.Add(
             Task.Run(async () => {
               try {
-                var started = DateTimeOffset.Now;
+                var startedInner = Stopwatch.StartNew();
                 var message = new Message(
                       userId,
                       $"a message {x}",
@@ -109,11 +111,11 @@ class Program {
                 );
 
                 var recordId = await api.Create(message);
-                var latency = DateTimeOffset.Now - started;
+                startedInner.Stop();
 
                 mutex.WaitOne();
                 messageIds.Add(recordId);
-                insertLatencies.Add(latency);
+                insertLatencies.Add(startedInner.Elapsed);
                 mutex.ReleaseMutex();
               }
               catch (Exception e) {
@@ -126,9 +128,10 @@ class Program {
       }
 
       await Task.WhenAll(allTasks);
+      started.Stop();
 
       Console.WriteLine(
-        $"Inserted {N} messages, took {DateTimeOffset.Now - started} (limit={CONCURRENCY})");
+        $"Inserted {N} messages, took {started.Elapsed} (limit={CONCURRENCY})");
 
       PrintLatencies(insertLatencies);
     }
@@ -143,7 +146,7 @@ class Program {
       var throttler = new SemaphoreSlim(initialCount: CONCURRENCY);
 
       var readLatencies = new List<TimeSpan>();
-      var started = DateTimeOffset.Now;
+      var started = Stopwatch.StartNew();
       for (int i = 0; i < M; ++i) {
         int x = i;
 
@@ -153,14 +156,14 @@ class Program {
         allTasks.Add(
             Task.Run(async () => {
               try {
-                var started = DateTimeOffset.Now;
+                var startedInner = Stopwatch.StartNew();
 
                 var recordId = messageIds[i % N];
                 await api.Read<Message>(recordId);
-                var latency = DateTimeOffset.Now - started;
+                startedInner.Stop();
 
                 mutex.WaitOne();
-                readLatencies.Add(latency);
+                readLatencies.Add(startedInner.Elapsed);
                 mutex.ReleaseMutex();
               }
               catch (Exception e) {
@@ -175,7 +178,7 @@ class Program {
       await Task.WhenAll(allTasks);
 
       Console.WriteLine(
-        $"Read {M} messages, took {DateTimeOffset.Now - started} (limit={CONCURRENCY})");
+        $"Read {M} messages, took {started.Elapsed} (limit={CONCURRENCY})");
 
       PrintLatencies(readLatencies);
     }
@@ -186,7 +189,7 @@ class Program {
     var client = new TrailBase.Client("http://localhost:4000", null);
     await client.Login("user@localhost", "secret");
 
-    // await InsertBenchmark(client);
+    await InsertBenchmark(client);
     await ReadBenchmark(client);
   }
 }
