@@ -14,6 +14,11 @@ public class Message {
   }
 }
 
+[JsonSourceGenerationOptions(WriteIndented = true)]
+[JsonSerializable(typeof(Message))]
+internal partial class SourceGenerationContext : JsonSerializerContext {
+}
+
 // See https://aka.ms/new-console-template for more information
 class Program {
   static readonly string room = "AZH8mYTFd5OexZn4K10jCA==";
@@ -43,7 +48,7 @@ class Program {
                     room
               );
 
-              await api.Create(message);
+              await api.Create(message, SourceGenerationContext.Default.Message);
             }
             catch (Exception e) {
               Console.WriteLine(e);
@@ -110,7 +115,7 @@ class Program {
                       room
                 );
 
-                var recordId = await api.Create(message);
+                var recordId = await api.Create(message, SourceGenerationContext.Default.Message);
                 startedInner.Stop();
 
                 mutex.WaitOne();
@@ -159,7 +164,7 @@ class Program {
                 var startedInner = Stopwatch.StartNew();
 
                 var recordId = messageIds[i % N];
-                await api.Read<Message>(recordId);
+                await api.Read<Message>(recordId, SourceGenerationContext.Default.Message);
                 startedInner.Stop();
 
                 mutex.WaitOne();
