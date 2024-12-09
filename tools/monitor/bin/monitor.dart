@@ -46,14 +46,24 @@ Future<Output?> runCmd(int pid, DateTime started) async {
     final line = stdout.split('\n').lastWhere((line) => line.isNotEmpty);
 
     final pattern = RegExp(r'\s+');
-    final split = line.trim().split(pattern);
+    final List<String> split = line.trim().split(pattern);
 
     // S = 'sleeping', R = 'running', I = 'idle', ...
     assert(['R', 'S', 'I'].contains(split[Columns.STATUS]));
 
     try {
+      final rss = split[Columns.RES];
+      final int rssKb = switch ((rss.endsWith('m'), rss.endsWith('g'))) {
+        (true, _) =>
+          (double.parse(rss.substring(0, rss.length - 1)) * 1024).toInt(),
+        (_, true) =>
+          (double.parse(rss.substring(0, rss.length - 1)) * 1024 * 1024)
+              .toInt(),
+        _ => int.parse(rss),
+      };
+
       return Output(
-        rss: int.parse(split[Columns.RES]),
+        rss: rssKb,
         cpu: double.parse(split[Columns.CPU]) / 100,
         elapsed: now.difference(started),
       );
