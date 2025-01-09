@@ -26,3 +26,19 @@ pub struct Tokens {
 pub struct RecordId {
     pub id: String,
 }
+
+pub fn print_latencies(mut latencies: Vec<std::time::Duration>) {
+    latencies.sort();
+
+    let len = latencies.len();
+    let p50 = latencies[len / 2];
+    let p75 = latencies[(len as f64 * 0.75).floor() as usize];
+    let p90 = latencies[(len as f64 * 0.90).floor() as usize];
+    let p95 = latencies[(len as f64 * 0.95).floor() as usize];
+
+    println!(
+        "Latencies: \n\tp50={:?} \n\tp75={:?} \n\tp90={:?} \n\tp95={:?}",
+        p50, p75, p90, p95
+    );
+}
+

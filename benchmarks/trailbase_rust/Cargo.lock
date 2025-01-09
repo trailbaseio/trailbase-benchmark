@@ -1180,6 +1180,7 @@ name = "trailbase_benchmark_runner_rust"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "bytes",
  "crossbeam-queue",
  "lazy_static",
  "reqwest",
