@@ -1,10 +1,18 @@
+use lazy_static::lazy_static;
 use reqwest::{Client, StatusCode};
 use serde::{Deserialize, Serialize};
 use std::time::Instant;
+use tokio::sync::Semaphore;
 
 const N: i64 = 100000;
-const TASKS: i64 = 10;
-const N_PER_TASK: i64 = N / TASKS;
+const LIMIT: usize = 16;
+
+lazy_static! {
+    static ref throttler: Semaphore = Semaphore::new(LIMIT);
+}
+
+// const TASKS: i64 = 10;
+// const N_PER_TASK: i64 = N / TASKS;
 
 // Hard-coded in the migrations.
 const ROOM: &str = "AZH8mYTFd5OexZn4K10jCA==";
@@ -47,55 +55,59 @@ async fn create_message(client: &Client, auth_token: &str, i: i64) {
     }
 }
 
-#[tokio::main]
-async fn main() -> Result<(), anyhow::Error> {
-    let client = Client::new();
+fn main() -> Result<(), anyhow::Error> {
+    let runtime = tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()?;
 
-    let res = client
-        .post("http://localhost:4000/api/auth/v1/login")
-        .header("Content-Type", "application/json")
-        .body(
-            serde_json::json!({
-                "email": "user@localhost",
-                "password": PASSWORD,
-            })
-            .to_string(),
-        )
-        .send()
-        .await?;
-
-    let tokens: Tokens = serde_json::from_str(&res.text().await?)?;
-    let auth_token = tokens.auth_token;
-
-    // Quick sanity check.
-    create_message(&client, &auth_token, -1).await;
-
-    let start = Instant::now();
-    let tasks: Vec<_> = (0..TASKS)
-        .into_iter()
-        .map(|task| {
-            let auth_token = auth_token.clone();
-            tokio::spawn(async move {
-                let client = Client::new();
-
-                for i in 0..N_PER_TASK {
-                    let id = task * N_PER_TASK + i;
-                    create_message(&client, &auth_token, id).await;
-                }
-                println!("finished {task}");
-            })
-        })
-        .collect();
-
-    for t in tasks {
-        t.await.unwrap();
+    lazy_static! {
+        static ref client: Client = Client::new();
     }
 
-    println!(
-        "Inserted {count} rows in {elapsed:?}",
-        elapsed = Instant::now() - start,
-        count = N * TASKS
-    );
+    // Log in.
+    let tokens = runtime.block_on(async {
+        let res = client
+            .post("http://localhost:4000/api/auth/v1/login")
+            .header("Content-Type", "application/json")
+            .body(
+                serde_json::json!({
+                    "email": "user@localhost",
+                    "password": PASSWORD,
+                })
+                .to_string(),
+            )
+            .send()
+            .await?;
+
+        let tokens: Tokens = serde_json::from_str(&res.text().await?)?;
+
+        // Quick sanity check.
+        create_message(&client, &tokens.auth_token, -1).await;
+
+        return Ok::<Tokens, anyhow::Error>(tokens);
+    })?;
+
+
+    runtime.block_on(async {
+        let mut tasks = vec![];
+
+        let start = Instant::now();
+        for id in 0..N {
+            let auth_token = tokens.auth_token.clone();
+
+            let handle = throttler.acquire().await.unwrap();
+
+            tasks.push(runtime.spawn(async move {
+                create_message(&client, &auth_token, id).await;
+                drop(handle);
+            }));
+        }
+
+        let _ = throttler.acquire_many(LIMIT as u32).await.unwrap();
+        let elapsed = Instant::now() - start;
+
+        println!("Inserted {N} rows in {elapsed:?}");
+    });
 
     return Ok(());
 }
