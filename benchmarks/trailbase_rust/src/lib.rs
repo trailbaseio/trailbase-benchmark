@@ -8,7 +8,7 @@ pub const ROOM: &str = "AZH8mYTFd5OexZn4K10jCA==";
 pub const USER_ID: &str = "AZH8mYedc1K7hrsTZgdHBA==";
 pub const PASSWORD: &str = "secret";
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Message {
     pub _owner: String,
     pub data: String,
@@ -20,4 +20,9 @@ pub struct Tokens {
     pub auth_token: String,
     #[allow(unused)]
     pub refresh_token: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct RecordId {
+    pub id: String,
 }
