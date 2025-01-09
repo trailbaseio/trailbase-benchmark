@@ -1,46 +1,21 @@
 use lazy_static::lazy_static;
 use reqwest::{Client, StatusCode};
-use serde::{Deserialize, Serialize};
 use std::time::Instant;
 use tokio::sync::Semaphore;
 
-const N: i64 = 100000;
-const LIMIT: usize = 16;
+use trailbase_benchmark_runner_rust::{Message, Tokens, LIMIT, N, PASSWORD, ROOM, USER_ID};
 
-lazy_static! {
-    static ref throttler: Semaphore = Semaphore::new(LIMIT);
-}
-
-// const TASKS: i64 = 10;
-// const N_PER_TASK: i64 = N / TASKS;
-
-// Hard-coded in the migrations.
-const ROOM: &str = "AZH8mYTFd5OexZn4K10jCA==";
-const USER_ID: &str = "AZH8mYedc1K7hrsTZgdHBA==";
-const PASSWORD: &str = "secret";
-
-#[derive(Debug, Serialize)]
-struct Message {
-    _owner: String,
-    data: String,
-    room: String,
-}
-
-#[derive(Debug, Deserialize)]
-struct Tokens {
-    auth_token: String,
-    #[allow(unused)]
-    refresh_token: String,
-}
+pub const LIMIT: usize = 16;
 
 async fn create_message(client: &Client, auth_token: &str, i: i64) {
+    const URL: &str = "http://localhost:4000/api/records/v1/message_api";
+
     let msg = Message {
         _owner: USER_ID.to_string(),
         data: format!("a message {i}"),
         room: ROOM.to_string(),
     };
 
-    const URL: &str = "http://localhost:4000/api/records/v1/message_api";
     let res = client
         .post(URL)
         .header("Content-Type", "application/json")
@@ -62,6 +37,7 @@ fn main() -> Result<(), anyhow::Error> {
 
     lazy_static! {
         static ref client: Client = Client::new();
+        static ref throttler: Semaphore = Semaphore::new(LIMIT);
     }
 
     // Log in.
@@ -86,7 +62,6 @@ fn main() -> Result<(), anyhow::Error> {
 
         return Ok::<Tokens, anyhow::Error>(tokens);
     })?;
-
 
     runtime.block_on(async {
         let mut tasks = vec![];
