@@ -1278,9 +1278,9 @@ dependencies = [
 
 [[package]]
 name = "trailbase-client"
-version = "0.0.2"
+version = "0.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3855dd18261cb7127db549363aac9f7e168f93b2fde0dd467ac10d46ae6ca948"
+checksum = "11d7e05f8d64b56ee3c5478ebfc115efdc2a410dd63f4c544f3f16bd0666bdb3"
 dependencies = [
  "jsonwebtoken",
  "log",

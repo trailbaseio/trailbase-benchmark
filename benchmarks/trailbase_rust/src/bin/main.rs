@@ -154,7 +154,7 @@ async fn read_benchmark(client: &Client) {
 async fn main() -> Result<(), anyhow::Error> {
     let site: &str = "http://localhost:4000";
 
-    let client: Client = Client::new(site, None);
+    let client: Client = Client::new(site, None).unwrap();
     client.login("user@localhost", PASSWORD).await.unwrap();
 
     insert_benchmark(&client).await;
