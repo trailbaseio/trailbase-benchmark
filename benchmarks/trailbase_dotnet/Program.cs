@@ -108,15 +108,17 @@ class Program {
         allTasks.Add(
             Task.Run(async () => {
               try {
-                var startedInner = Stopwatch.StartNew();
                 var message = new Message(
                       userId,
                       $"a message {x}",
                       room
                 );
 
-                var recordId = await api.Create(message, SourceGenerationContext.Default.Message);
-                startedInner.Stop();
+                var startedInner = Stopwatch.StartNew();
+                var recordId = await api.Create(message, SourceGenerationContext.Default.Message).ContinueWith((task) => {
+                    startedInner.Stop();
+                    return task.Result;
+                });
 
                 mutex.WaitOne();
                 messageIds.Add(recordId);
@@ -161,11 +163,13 @@ class Program {
         allTasks.Add(
             Task.Run(async () => {
               try {
-                var startedInner = Stopwatch.StartNew();
-
                 var recordId = messageIds[i % N];
-                await api.Read<Message>(recordId, SourceGenerationContext.Default.Message);
-                startedInner.Stop();
+
+                var startedInner = Stopwatch.StartNew();
+                await api.Read<Message>(recordId, SourceGenerationContext.Default.Message).ContinueWith((task) => {
+                    startedInner.Stop();
+                    return task.Result;
+                });
 
                 mutex.WaitOne();
                 readLatencies.Add(startedInner.Elapsed);
