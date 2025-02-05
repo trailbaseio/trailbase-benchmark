@@ -13,10 +13,20 @@ Future<void> insertBenchmark(PocketBase pb) async {
   final userId = userData.record!.id;
   final api = pb.collection('message');
 
-  final rooms = await pb.collection('room').getList();
+  final roomApi = pb.collection('room');
+  final rooms = await roomApi.getList();
   final roomNameToId = Map.fromEntries(rooms.items
       .map((record) => MapEntry(record.getStringValue('name'), record.id)));
-  final roomId = roomNameToId['room0']!;
+
+  var roomId = roomNameToId['room0'];
+  if (roomId == null) {
+    final id = roomId = (await roomApi.create(body: {'name': 'room0'})).id;
+
+    await pb.collection('room_members').create(body: {
+      'user': userId,
+      'room': id,
+    });
+  }
 
   Future<void> createMessage(int i) async {
     await api.create(body: {
