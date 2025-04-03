@@ -214,11 +214,11 @@ Future<void> fibonacciJsBenchmark() async {
 }
 
 Future<void> main(List<String> arguments) async {
-  final client = Client('http://127.0.0.1:4000');
+  final client = Client('http://localhost:4000');
   await client.login('user@localhost', password);
 
   await insertBenchmark(client);
-  // await readBenchmark(client);
+  await readBenchmark(client);
   // await benchmarkHigherConcurrency();
   // await fibonacciJsBenchmark();
 }

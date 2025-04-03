@@ -6,9 +6,9 @@ environment:
   sdk: ^3.5.3
 
 dependencies:
-  trailbase: ^0.1.0
+  trailbase: ^0.3.0
   pool: ^1.5.1
-  dio: ^5.7.0
+  dio: ^5.8.0
 
 dev_dependencies:
   lints: ^4.0.0
