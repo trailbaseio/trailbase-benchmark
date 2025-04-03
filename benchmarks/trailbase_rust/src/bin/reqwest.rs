@@ -139,14 +139,14 @@ async fn read_benchmark(
 
         let queue = Arc::new(SegQueue::<String>::new());
         for idx in 0..M {
-            queue.push(record_ids[idx % record_ids.len()].id.clone());
+            queue.push(record_ids[idx % record_ids.len()].ids[0].clone());
         }
 
         let read_latencies = Arc::new(SegQueue::<std::time::Duration>::new());
 
         let start = Instant::now();
         for idx in 0..M {
-            let id = record_ids[idx % record_ids.len()].id.clone();
+            let id = record_ids[idx % record_ids.len()].ids[0].clone();
             let auth_token = tokens.auth_token.clone();
             let latencies = read_latencies.clone();
 

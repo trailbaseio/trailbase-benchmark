@@ -1,7 +1,7 @@
 use crossbeam_queue::SegQueue;
 use std::sync::Arc;
 use std::time::Instant;
-use ureq::{Agent, AgentBuilder};
+use ureq::Agent;
 
 use trailbase_benchmark_runner_rust::{
     print_latencies, Message, RecordId, Tokens, N, PASSWORD, ROOM, USER_ID,
@@ -20,10 +20,11 @@ fn create_message(agent: &Agent, auth_token: &str, id: i64) -> RecordId {
 
     let json: RecordId = agent
         .post(URL)
-        .set("Authorization", &format!("Bearer {auth_token}"))
-        .send_json(ureq::json!(msg))
+        .header("Authorization", &format!("Bearer {auth_token}"))
+        .send_json(&msg)
         .unwrap()
-        .into_json()
+        .body_mut()
+        .read_json()
         .unwrap();
 
     return json;
@@ -34,10 +35,10 @@ fn read_message(agent: &Agent, auth_token: &str, record_id: &str) -> String {
 
     return agent
         .get(&format!("{URL}/{record_id}"))
-        .set("Authorization", &format!("Bearer {auth_token}"))
+        .header("Authorization", &format!("Bearer {auth_token}"))
         .call()
         .unwrap()
-        .into_string()
+        .body_mut().read_to_string()
         .unwrap();
 }
 
@@ -136,7 +137,7 @@ fn read_benchmark(agent: &Agent, tokens: &Tokens) -> Result<(), anyhow::Error> {
 
         let queue = Arc::new(SegQueue::<String>::new());
         for idx in 0..M {
-            queue.push(record_ids[idx % record_ids.len()].id.clone());
+            queue.push(record_ids[idx % record_ids.len()].ids[0].clone());
         }
 
         let read_latencies = Arc::new(SegQueue::<std::time::Duration>::new());
@@ -183,15 +184,16 @@ fn read_benchmark(agent: &Agent, tokens: &Tokens) -> Result<(), anyhow::Error> {
 }
 
 fn main() -> Result<(), anyhow::Error> {
-    let agent = AgentBuilder::new().build();
+    let agent = Agent::new_with_defaults();
 
     let tokens: Tokens = agent
         .post("http://localhost:4000/api/auth/v1/login")
-        .send_json(ureq::json!({
+        .send_json(serde_json::json!({
             "email": "user@localhost",
             "password": PASSWORD,
         }))?
-        .into_json()?;
+        .body_mut()
+        .read_json()?;
 
     // Quick sanity check.
     create_message(&agent, &tokens.auth_token, -1);

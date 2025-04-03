@@ -24,7 +24,7 @@ pub struct Tokens {
 
 #[derive(Debug, Deserialize)]
 pub struct RecordId {
-    pub id: String,
+    pub ids: Vec<String>,
 }
 
 pub fn print_latencies(mut latencies: Vec<std::time::Duration>) {
